@@ -1,0 +1,5 @@
+{
+  "cfp_only": "Disease: {DISEASE_NAME}\nDescribe the visual features for this disease in Color Fundus Photography (CFP).",
+  "oct_only": "Disease: {DISEASE_NAME}\nDescribe the visual features for this disease in Optical Coherence Tomography (OCT).",
+  "cfp_oct_combined": "Disease: {DISEASE_NAME}\nDescribe the visual features for this disease separately in Color Fundus Photography (CFP) and Optical Coherence Tomography (OCT)."
+}

@@ -1,0 +1,5 @@
+{
+  "cfp_only": "CFP Image: <image>\nDescribe the visual features of the Color Fundus Photography (CFP) image.",
+  "oct_only": "OCT Scans: <image>...<image>\nDescribe the visual features of the Optical Coherence Tomography (OCT) scans.",
+  "cfp_oct_combined": "CFP Image: <image>\nOCT Scans: <image>...<image>\nDescribe the visual features of the provided images separately:"
+}
