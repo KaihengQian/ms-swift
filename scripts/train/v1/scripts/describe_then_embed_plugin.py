@@ -138,7 +138,9 @@ class DescribeThenEmbedLoss(BaseLoss):
         self._gen_sum = 0.0
         self._contra_sum = 0.0
         self._n = 0
-        trainer.add_callback(_LogComponentsCallback())
+        # 注册放到 _setup：__init__ 时 trainer 的 callback_handler 尚未初始化
+        # （create_loss_and_eval_metric 先于 Trainer.__init__ 的回调注册执行）
+        self._callback_added = False
 
     def pop_components(self) -> dict:
         n = self._n
@@ -167,6 +169,9 @@ class DescribeThenEmbedLoss(BaseLoss):
         if self._setup_done:
             return
         self._setup_done = True
+        if not self._callback_added:
+            self.trainer.add_callback(_LogComponentsCallback())
+            self._callback_added = True
         model = self.trainer.model
         model_meta = self.trainer.model_meta
         lm_head_model = get_lm_head_model(model, model_meta=model_meta)
