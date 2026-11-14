@@ -51,7 +51,7 @@ ADAPTER="$(cd "$ADAPTER" && pwd)"
 command -v funembed-eval >/dev/null || { echo "未找到 funembed-eval（funeval 环境安装）" >&2; exit 2; }
 
 read -r -a SPLIT_ARR <<< "$SPLITS"
-read -r -a GPU_ARR <<< "$GPU"
+read -r -a GPU_ARR <<< "$(echo "$GPU" | tr ',' ' ')"   # "0,1" → (0 1)
 export GEN_EMB_NUM="$GEN_EMB_NUM_DEFAULT"
 
 # ---------- checkpoint 收集（单 ckpt 或实验目录全部） ----------
