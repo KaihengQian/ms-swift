@@ -1,6 +1,6 @@
 BUNDLE_DEFAULT="/home/qkh/FunEmbed/20261108_model_eval/funembed_eval_linyan_20261109_v3_2"
 MODEL_DEFAULT="/home/qkh/models/Qwen--Qwen3-VL-Embedding-2B"
-ADAPTER_DEFAULT="/home/qkh/FunEmbed/20261027_model_train/v1/models/default/v0-20261105-233332"
+ADAPTER_DEFAULT="/home/qkh/FunEmbed/20261027_model_train/v1/models/default/v1-20261112-184439"
 WORK_DIR_DEFAULT="/home/qkh/FunEmbed/20261108_model_eval"
 SPLITS_DEFAULT="internal_test external_test"
 GPU_DEFAULT="0,1"
@@ -28,7 +28,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"   # ms-swift 仓库根（framework_path 用）
 ENCODER="$SCRIPT_DIR/describe_then_embed_encoder.py"
 
-BUNDLE="$BUNDLE_DEFAULT"; ADAPTER="$ADAPTER_DEFAULT"
+BUNDLE="$BUNDLE_DEFAULT"; ADAPTER="$ADAPTER_DEFAULT"; MODEL="$MODEL_DEFAULT"
 SPLITS="$SPLITS_DEFAULT"; GPU="$GPU_DEFAULT"; BATCH="$BATCH_DEFAULT"
 WORK_DIR="$WORK_DIR_DEFAULT"; RUN_NAME=""; SMOKE=""
 while [[ $# -gt 0 ]]; do
@@ -48,7 +48,6 @@ done
 [ -z "$BUNDLE" ] && { usage >&2; exit 2; }
 [ -z "$ADAPTER" ] && { echo "缺少 --adapter" >&2; exit 2; }
 ADAPTER="$(cd "$ADAPTER" && pwd)"
-[ -f "$ADAPTER/adapter_config.json" ] || { echo "$ADAPTER 不是有效 checkpoint（缺 adapter_config.json）；实验目录请传 models/<实验名> 层级" >&2; exit 2; }
 command -v funembed-eval >/dev/null || { echo "未找到 funembed-eval（funeval 环境安装）" >&2; exit 2; }
 
 read -r -a SPLIT_ARR <<< "$SPLITS"
@@ -64,6 +63,7 @@ if compgen -G "$ADAPTER/checkpoint-*" >/dev/null; then
   [ ${#CKPTS[@]} -eq 0 ] && { echo "$ADAPTER 下无有效 checkpoint-*" >&2; exit 2; }
   IFS=$'\n' CKPTS=($(sort -t- -k2 -n <<< "${CKPTS[*]}")); unset IFS
 else
+  [ -f "$ADAPTER/adapter_config.json" ] || { echo "$ADAPTER 既不是有效 checkpoint（缺 adapter_config.json），也不是含 checkpoint-* 的实验目录" >&2; exit 2; }
   CKPTS=("$ADAPTER")
 fi
 
