@@ -1,6 +1,6 @@
 # Describe-then-Embed v1 —— Qwen3-VL-Embedding 描述式训练
 
-> 目录：`scripts/train/v1/`
+> 目录：`scripts/train/v1/`（按版本分目录；环境文件跨版本共享于 `scripts/train/` 根，v2 时新建 `scripts/train/v2/`）
 > 目标模型：`Qwen3-VL-Embedding-2B`（`model_type=qwen3_vl_emb`）
 > 本目录自成一体：训练脚本、插件（Loss+Template+评估指标）、数据构建脚本、prompt、环境锁定文件。
 
@@ -26,7 +26,7 @@ L = λ · L_gen + L_contra        （λ = DESC_EMBED_LAMBDA，默认 5）
 | `scripts/describe_then_embed_plugin.py` | **核心插件**：`DescribeThenEmbedLoss`（联合损失+GEN_LOSS_RATIO 调度+组件日志）、`DescribeThenEmbedTemplate`（追加 `<gen_emb>`、gen_labels、DOC_GEN_SUPERVISE 三态、collator）、`DescribeThenEmbedMetrics`（retrieval_top1/mrr 评估指标）。经 `--custom_register_path` 加载，**不改动 ms-swift 核心源码** |
 | `prompts/query_instruction_prompt.json` | Query 侧指令（cfp_only / oct_only / cfp_oct_combined） |
 | `prompts/doc_instruction_prompt.json` | Doc 侧指令（`{DISEASE_NAME}` 占位符） |
-| `requirements.txt` / `environment.yml` | 环境锁定（python 3.10 / torch 2.14.1+cu130 / transformers 5.20.2 / peft 0.20.0 / deepspeed 0.19.9 / kernels 0.17.2） |
+| `../requirements.txt` / `../environment.yml` | 环境锁定（python 3.10 / torch 2.14.1+cu130 / transformers 5.20.2 / peft 0.20.0 / deepspeed 0.19.9 / kernels 0.17.2；跨版本共享，位于 `scripts/train/` 根） |
 
 ## 3. 数据格式
 
@@ -76,7 +76,7 @@ L = λ · L_gen + L_contra        （λ = DESC_EMBED_LAMBDA，默认 5）
 # 1) 环境（见 requirements.txt 头部注释；本仓库 pip install -e .）
 conda create -n swift python=3.10 -y && conda activate swift
 pip install -e <本仓库根目录>
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 
 # 2) 训练（GPU 卡号、模型/数据/插件路径可用环境变量覆盖；训练数据 JSONL 需自行按 §3 格式准备）
 #    快速验证可加 --max_steps 10 小跑

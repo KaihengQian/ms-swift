@@ -1,6 +1,6 @@
 # Describe-then-Embed v1 —— 检索式评测
 
-> 目录：`scripts/eval/`
+> 目录：`scripts/eval/v1/`（评测接入按版本分目录；根下 `scripts/eval/` 另有跨版本共享的 `funembed_eval/` 框架与 `requirements.txt`，v2 接入时新建 `scripts/eval/v2/`）
 > 评测对象：`scripts/train/v1` 训练产出的 describe-then-embed checkpoint（基座 + LoRA）
 > 本目录自成一体：评测框架本体（实验室交付）、两步表征 plugin encoder、评测入口脚本、环境锁定文件。
 
@@ -30,10 +30,10 @@
 | 文件 | 说明 |
 | --- | --- |
 | `funembed_eval/` | 评测框架本体（实验室交付，pin 自 `wvw13/ms-swift@4504dad` 并含 within_split 支持；`pip install -e` 后提供 `funembed-eval` 命令；协议详见 `funembed_eval/docs/PROTOCOL.md`、`funembed_eval/docs/MODEL_INPUT.md`） |
-| `scripts/describe_then_embed_encoder.py` | **两步表征 plugin encoder**。契约：`create_encoder(config)` → 带 `report: dict` 与 `encode(branches) -> (单位向量矩阵, token 数)` 的对象；评测框架以 `encoder.backend=plugin` 加载 |
-| `scripts/run_eval.sh` | **评测入口**（init-lab → patch → check → encode → evaluate → audit 一条龙；双模式见 §5） |
-| `requirements.txt` | 评测环境锁定依赖（头注释含复现步骤） |
-| `environment.yml` | conda 版环境定义（pip 层引用 requirements.txt） |
+| `scripts/describe_then_embed_encoder.py`（位于本目录 `scripts/`） | **两步表征 plugin encoder**。契约：`create_encoder(config)` → 带 `report: dict` 与 `encode(branches) -> (单位向量矩阵, token 数)` 的对象；评测框架以 `encoder.backend=plugin` 加载 |
+| `scripts/run_eval.sh`（位于本目录 `scripts/`） | **评测入口**（init-lab → patch → check → encode → evaluate → audit 一条龙；双模式见 §5） |
+| `../requirements.txt` | 评测环境锁定依赖（跨版本共享，位于 `scripts/eval/` 根） |
+| `environment.yml` | conda 版环境定义（pip 层引用 `../requirements.txt`） |
 
 **私有输入包不在本仓库**：病例清单（manifest.jsonl，6263 例）、22 类映射（classes.json）、疾病定义（texts.json）按实验室渠道获取后解压到工作目录（如 `/home/qkh/FunEmbed/20261108_model_eval/`）。
 
@@ -68,17 +68,17 @@
 
 ```bash
 # 1) 环境（见 requirements.txt 头注释；评测框架随本仓库）
-conda env create -f environment.yml && conda activate funeval
+conda env create -f v1/environment.yml && conda activate funeval
 pip install -e <本仓库根目录>          # ms-swift（推理框架）
-pip install -e funembed_eval/          # 评测 CLI
+pip install -e ../funembed_eval/          # 评测 CLI
 
 # 2) 单 checkpoint 评测
-bash scripts/run_eval.sh --bundle <私有输入包目录> \
+bash v1/scripts/run_eval.sh --bundle <私有输入包目录> \
     --adapter <训练产物>/models/default/v0-.../checkpoint-835 \
     --splits internal_test --gpu 3
 
 # 3) 整次实验全部 checkpoint，内外测试集各占一卡并行
-bash scripts/run_eval.sh --bundle <私有输入包目录> \
+bash v1/scripts/run_eval.sh --bundle <私有输入包目录> \
     --adapter <训练产物>/models/default/v0-... \
     --splits "internal_test external_test" --gpu "3,2"
 ```

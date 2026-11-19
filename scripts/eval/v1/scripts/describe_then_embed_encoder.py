@@ -41,7 +41,7 @@ DEFAULT_SYSTEM = "Represent the user's input."
 GEN_EMB_NUM = max(1, int(os.environ.get('GEN_EMB_NUM', '1')))
 # 训练侧 prompt：默认取同仓训练目录 v1 的 prompts/，可用环境变量 DTE_TRAIN_DIR 覆盖
 _TRAIN_V1_DIR = Path(os.environ.get('DTE_TRAIN_DIR',
-                                    Path(__file__).resolve().parents[2] / 'train' / 'v1'))
+                                    Path(__file__).resolve().parents[3] / 'train' / 'v1'))
 _TEMPLATES_DIR = _TRAIN_V1_DIR / 'prompts'
 
 # Fallbacks mirror v1/prompts/*.json verbatim.
