@@ -35,7 +35,7 @@
 | `requirements.txt` | 评测环境锁定依赖（头注释含复现步骤） |
 | `environment.yml` | conda 版环境定义（pip 层引用 requirements.txt） |
 
-**私有输入包不在本仓库**：病例清单（manifest.jsonl，6263 例）、22 类映射（classes.json）、疾病定义（texts.json）按实验室渠道获取后解压到工作目录根（如 `/home/qkh/FunEmbed/20261108_model_eval/`）；评测运行产物按版本放 `<根>/v1/`、`<根>/v2/` 等子目录。
+**私有输入包不在本仓库**：病例清单（manifest.jsonl，6263 例）、22 类映射（classes.json）、疾病定义（texts.json）按实验室渠道获取后解压到工作目录（如 `/home/qkh/FunEmbed/20261108_model_eval/`）。
 
 ## 4. 评测配置项（脚本参数与环境变量）
 
@@ -47,7 +47,7 @@
 | `--gpu` | "3,2" | 与 --splits 顺序一一对应；数量不足时循环使用 |
 | `--batch` | 8 | 单卡推理批（生成步+嵌入步同批）；实测上限 16（见 §6） |
 | `--model` | Qwen3-VL-Embedding-2B 本机路径 | 基座模型目录（含 tokenizer/processor） |
-| `--work-dir` | `/home/qkh/FunEmbed/20261108_model_eval/v1` | 运行产物根目录（按版本分子目录；v2 实验传 `.../v2`） |
+| `--work-dir` | `/home/qkh/FunEmbed/20261108_model_eval` | 运行产物根目录 |
 | `--run-name` | `dte_<split 去掉 _test>` | 覆盖默认 run 名 |
 | `GEN_EMB_NUM`（环境变量） | 1 | 末尾 `<gen_emb>` token 数（须与训练一致） |
 | `--smoke` | — | 短测：2 query / 4 gallery / 22 类文本 |
@@ -88,4 +88,4 @@ bash scripts/run_eval.sh --bundle <私有输入包目录> \
   - `descriptions/`：**模型生成的描述文本**（`image_C.jsonl`、`doc_B.jsonl` 等，含 prompt 与 description，供人工查看或单独评估）；
   - 重复执行自动跳过已有 `results/` 的 checkpoint（重跑删对应目录）。
 - 多 checkpoint 模式跑完自动打印各 checkpoint × 划分 × 方向的 ndcg@5/recall@5/hit@1 汇总表；单点失败不阻断整批，结束统一报告。
-- GPU 被占用时可先提交脚本等卡：run_eval.sh 前加轮询（示例见 `20261108_model_eval/v1/scripts/` 下的等待循环思路）。
+- GPU 被占用时可先提交脚本等卡：run_eval.sh 前加轮询（示例见 `20261108_model_eval/auto_eval_gpu3.sh` 的等待循环）。

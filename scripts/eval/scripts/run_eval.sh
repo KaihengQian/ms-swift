@@ -1,7 +1,7 @@
 BUNDLE_DEFAULT="/home/qkh/FunEmbed/20261108_model_eval/funembed_eval_linyan_20261109_v3_2"
 MODEL_DEFAULT="/home/qkh/models/Qwen--Qwen3-VL-Embedding-2B"
-ADAPTER_DEFAULT="/home/qkh/FunEmbed/20261027_model_train/v1/models/caption_only/v0-20261115-210609"
-WORK_DIR_DEFAULT="/home/qkh/FunEmbed/20261108_model_eval/v1"
+ADAPTER_DEFAULT="/home/qkh/FunEmbed/20261027_model_train/v1/models/default/v1-20261112-184439"
+WORK_DIR_DEFAULT="/home/qkh/FunEmbed/20261108_model_eval"
 SPLITS_DEFAULT="internal_test external_test"
 GPU_DEFAULT="0,1"
 BATCH_DEFAULT=8
