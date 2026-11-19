@@ -21,8 +21,8 @@ PLUGIN=${PLUGIN:-${SCRIPT_DIR}/describe_then_embed_plugin.py}
 DATA=${DATA:-/home/qkh/FunEmbed/20261027_model_train/v1/data/describe_then_embed_train.jsonl}
 OUTPUT_DIR=${OUTPUT_DIR:-/home/qkh/FunEmbed/20261027_model_train/v1/models/default}
 
-NPROC_PER_NODE=4 \
-CUDA_VISIBLE_DEVICES=0,1,2,3 \
+NPROC_PER_NODE=${NPROC_PER_NODE:-4} \
+CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0,1,2,3} \
 swift sft \
     --model ${MODEL} \
     --model_type qwen3_vl_emb \

@@ -13,7 +13,6 @@ import os
 import torch
 import torch.nn.functional as F
 from torch import nn
-from transformers import TrainerCallback
 
 from swift.loss import BaseLoss, loss_map
 from swift.loss.embedding import InfonceLoss
@@ -30,15 +29,6 @@ logger = get_logger()
 # Running loss instance (set in DescribeThenEmbedLoss.__init__); lets the logging
 # callback read per-term loss components. Per-rank in DDP (each process has its own).
 _LOSS_INSTANCE = None
-
-
-class _LogComponentsCallback(TrainerCallback):
-    """Inject per-term loss components (loss_gen / loss_contrastive) into trainer logs."""
-
-    def on_log(self, args, state, control, logs=None, **kwargs):
-        if logs is not None and _LOSS_INSTANCE is not None:
-            comps = _LOSS_INSTANCE.pop_components()
-            logs.update(comps)
 
 
 class DescribeThenEmbedMetrics(EvalMetrics):
@@ -135,23 +125,15 @@ class DescribeThenEmbedLoss(BaseLoss):
 
         global _LOSS_INSTANCE
         _LOSS_INSTANCE = self
-        self._gen_sum = 0.0
-        self._contra_sum = 0.0
-        self._n = 0
-        # 注册放到 _setup：__init__ 时 trainer 的 callback_handler 尚未初始化
-        # （create_loss_and_eval_metric 先于 Trainer.__init__ 的回调注册执行）
-        self._callback_added = False
+        # 分项损失走 trainer.custom_metrics:ms-swift 的 Trainer.log() 会自动
+        # compute+reset 并写入 logging.jsonl(transformers on_log 钩子会被 mixin.log 绕过)。
 
-    def pop_components(self) -> dict:
-        n = self._n
-        if n == 0:
-            return {}
-        gen = self._gen_sum / n
-        contra = self._contra_sum / n
-        self._gen_sum = 0.0
-        self._contra_sum = 0.0
-        self._n = 0
-        return {'loss_gen': gen, 'loss_contrastive': contra}
+    def _report(self, name, value):
+        """累计一个分项到 trainer 的 custom_metrics['train']（log 时自动求均值）。"""
+        metrics = getattr(self.trainer, 'custom_metrics', None)
+        if metrics is None:
+            return
+        metrics['train'][name].update(value)
 
     def _gen_loss_active(self) -> bool:
         if self.gen_loss_ratio >= 1.0:
@@ -169,9 +151,6 @@ class DescribeThenEmbedLoss(BaseLoss):
         if self._setup_done:
             return
         self._setup_done = True
-        if not self._callback_added:
-            self.trainer.add_callback(_LogComponentsCallback())
-            self._callback_added = True
         model = self.trainer.model
         model_meta = self.trainer.model_meta
         lm_head_model = get_lm_head_model(model, model_meta=model_meta)
@@ -226,9 +205,8 @@ class DescribeThenEmbedLoss(BaseLoss):
                     Z = F.linear(H_sup, self._lm_head.weight, self._lm_head.bias)
                     loss_gen = F.cross_entropy(Z.float(), targets)
 
-        self._gen_sum += loss_gen.detach().item()
-        self._contra_sum += loss_contrastive.detach().item()
-        self._n += 1
+        self._report('loss_gen', loss_gen.detach().item())
+        self._report('loss_contrastive', loss_contrastive.detach().item())
         return self.lambda_gen * loss_gen + loss_contrastive
 
 
